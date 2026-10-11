@@ -94,9 +94,19 @@ paru_works() { command -v paru >/dev/null && paru --version &>/dev/null; }
 install_paru_bin() {
   local tmp
   # A source-built paru conflicts with paru-bin by package name; clear it.
-  if pacman -Q paru &>/dev/null; then
+  # Query with sudo: the removal below runs as root, and root can see a
+  # different pacman (secure_path) or db view than the invoking user.
+  log "Installed paru packages: $(sudo pacman -Q paru-bin paru 2>&1 | tr '\n' ' ')"
+  if sudo pacman -Q paru &>/dev/null; then
     log "Removing conflicting paru package..."
-    sudo pacman -R --noconfirm paru || return 1
+    if ! sudo pacman -R --noconfirm paru; then
+      # pacman can error on a package its own -Q just listed (stale db
+      # entry); fatal only if the package is really still installed.
+      if sudo pacman -Q paru &>/dev/null; then
+        return 1
+      fi
+      warn "Removal errored, but paru is no longer installed; continuing."
+    fi
   fi
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
@@ -158,9 +168,15 @@ if ! paru_works; then
             if [[ ${ans2:-Y} =~ ^[Yy]$ ]]; then
               sudo pacman -S --needed --noconfirm rust || die "rust install failed."
               # The broken binary is paru-bin; the source build conflicts by name.
-              if pacman -Q paru-bin &>/dev/null; then
+              log "Installed paru packages: $(sudo pacman -Q paru-bin paru 2>&1 | tr '\n' ' ')"
+              if sudo pacman -Q paru-bin &>/dev/null; then
                 log "Removing paru-bin (conflicts with source build)..."
-                sudo pacman -R --noconfirm paru-bin || die "Could not remove paru-bin."
+                if ! sudo pacman -R --noconfirm paru-bin; then
+                  if sudo pacman -Q paru-bin &>/dev/null; then
+                    die "Could not remove paru-bin."
+                  fi
+                  warn "Removal errored, but paru-bin is gone; continuing."
+                fi
               fi
               tmp2=$(mktemp -d)
               trap 'rm -rf "$tmp2"' EXIT
