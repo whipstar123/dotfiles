@@ -93,6 +93,10 @@ paru_works() { command -v paru >/dev/null && paru --version &>/dev/null; }
 
 install_paru_bin() {
   local tmp
+  # A source-built paru conflicts with paru-bin by package name; clear it.
+  if pacman -Q paru &>/dev/null; then
+    sudo pacman -R --noconfirm paru || return 1
+  fi
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
   git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" || return 1
@@ -132,6 +136,10 @@ if ! paru_works; then
           if read -rp "Build paru from source against your libraries (needs rust)? [Y/n] " ans2 </dev/tty || [[ -n $ans2 ]]; then
             if [[ ${ans2:-Y} =~ ^[Yy]$ ]]; then
               sudo pacman -S --needed --noconfirm rust || die "rust install failed."
+              # The broken binary is paru-bin; the source build conflicts by name.
+              if pacman -Q paru-bin &>/dev/null; then
+                sudo pacman -R --noconfirm paru-bin || die "Could not remove paru-bin."
+              fi
               tmp2=$(mktemp -d)
               trap 'rm -rf "$tmp2"' EXIT
               git clone https://aur.archlinux.org/paru.git "$tmp2/paru" || die "paru clone failed."
