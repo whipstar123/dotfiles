@@ -84,26 +84,45 @@ else
     || die "pacman package install failed."
 fi
 
-# --- 2. paru (bootstrap if missing, rebuild if broken) -------------------------
-# A paru linked against a stale libalpm (e.g. after a pacman upgrade) fails
-# with "error while loading shared libraries". Rebuild it from AUR in that
-# case instead of trusting the broken binary.
-if command -v paru >/dev/null && paru --version &>/dev/null; then
-  log "paru already present and working."
-else
+# --- 2. paru (reuse, reinstall, or update-then-retry) ---------------------------
+# A paru linked against a libalpm the system no longer ships fails with
+# "error while loading shared libraries". Reinstalling paru-bin fixes a
+# stale binary; if even a fresh paru cannot start, the system itself is
+# older than paru-bin expects and needs a full update first.
+paru_works() { command -v paru >/dev/null && paru --version &>/dev/null; }
+
+install_paru_bin() {
+  local tmp
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" || return 1
+  (cd "$tmp/paru-bin" && makepkg -si --noconfirm) || return 1
+  trap - EXIT
+  rm -rf "$tmp"
+}
+
+if ! paru_works; then
   if command -v paru >/dev/null; then
-    warn "Installed paru is broken (stale library link); rebuilding from AUR..."
+    warn "Installed paru is broken (stale library link); reinstalling from AUR..."
   else
     log "Bootstrapping paru from AUR..."
   fi
-  tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' EXIT
-  git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" \
-    || die "paru-bin clone failed (network or AUR unreachable)."
-  (cd "$tmp/paru-bin" && makepkg -si --noconfirm) \
-    || die "paru build/install failed (try a full system update first)."
-  trap - EXIT
-  rm -rf "$tmp"
+  install_paru_bin || die "paru build/install failed (network or AUR unreachable)."
+  if ! paru_works; then
+    warn "A fresh paru still cannot start: system libraries predate paru-bin."
+    ans=""
+    if read -rp "Run a full system update now [sudo pacman -Syu]? [Y/n] " ans </dev/tty || [[ -n $ans ]]; then
+      if [[ ${ans:-Y} =~ ^[Yy]$ ]]; then
+        sudo pacman -Syu || die "System update failed."
+        paru_works || install_paru_bin || die "paru reinstall failed after update."
+        paru_works || die "paru still broken after update; finish updating and re-run."
+      else
+        die "Update the system (sudo pacman -Syu), then re-run install.sh."
+      fi
+    else
+      die "Update the system (sudo pacman -Syu), then re-run install.sh."
+    fi
+  fi
 fi
 aur_want=(helium-browser-bin omasnap-bin cliamp)
 aur_missing=()
