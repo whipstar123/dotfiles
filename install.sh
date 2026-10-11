@@ -62,7 +62,7 @@ want=(
   pipewire wireplumber pipewire-pulse pipewire-alsa
   networkmanager bluez pamixer brightnessctl power-profiles-daemon udiskie
   nautilus sushi imv mpv evince btop fastfetch gum
-  gpu-screen-recorder tesseract tesseract-data-eng
+  gpu-screen-recorder tesseract tesseract-data-eng libvips ffmpegthumbnailer
   ttf-cascadia-mono-nerd noto-fonts noto-fonts-emoji
   ttf-jetbrains-mono-nerd woff2-font-awesome
 )

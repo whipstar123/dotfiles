@@ -30,6 +30,7 @@ or partition changes — btrfs + limine are never touched.
 | `gum` | All picker TUIs (package add/remove, theme/plugin prompts) |
 | `gpu-screen-recorder` | Screen recording backend for Capture |
 | `tesseract`, `tesseract-data-eng` | OCR backend for Extract-text keybind |
+| `libvips`, `ffmpegthumbnailer` | Thumbnail backends for image pickers (Background, Theme) |
 | `ttf-cascadia-mono-nerd`, `ttf-jetbrains-mono-nerd`, `noto-fonts`, `noto-fonts-emoji`, `woff2-font-awesome` | Terminal, UI, icon-glyph coverage |
 
 ## 2. AUR packages (`paru -S`; `paru-bin` bootstrapped via `makepkg` if absent)
