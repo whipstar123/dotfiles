@@ -91,18 +91,24 @@ fi
 # older than paru-bin expects and needs a full update first.
 paru_works() { command -v paru >/dev/null && paru --version &>/dev/null; }
 
+# Exact-name test for flavor identity. Plain -Q also matches provides, and
+# paru-bin provides paru, so `-Q paru` succeeds when only paru-bin is
+# installed while `-R paru` then fails with "target not found". Grep the
+# true installed-name list instead.
+pkg_exact() { sudo pacman -Qq 2>/dev/null | grep -qx "$1"; }
+
 install_paru_bin() {
   local tmp
   # A source-built paru conflicts with paru-bin by package name; clear it.
   # Query with sudo: the removal below runs as root, and root can see a
   # different pacman (secure_path) or db view than the invoking user.
   log "Installed paru packages: $(sudo pacman -Q paru-bin paru 2>&1 | tr '\n' ' ')"
-  if sudo pacman -Q paru &>/dev/null; then
+  if pkg_exact paru; then
     log "Removing conflicting paru package..."
     if ! sudo pacman -R --noconfirm paru; then
       # pacman can error on a package its own -Q just listed (stale db
       # entry); fatal only if the package is really still installed.
-      if sudo pacman -Q paru &>/dev/null; then
+      if pkg_exact paru; then
         return 1
       fi
       warn "Removal errored, but paru is no longer installed; continuing."
@@ -169,10 +175,10 @@ if ! paru_works; then
               sudo pacman -S --needed --noconfirm rust || die "rust install failed."
               # The broken binary is paru-bin; the source build conflicts by name.
               log "Installed paru packages: $(sudo pacman -Q paru-bin paru 2>&1 | tr '\n' ' ')"
-              if sudo pacman -Q paru-bin &>/dev/null; then
+              if pkg_exact paru-bin; then
                 log "Removing paru-bin (conflicts with source build)..."
                 if ! sudo pacman -R --noconfirm paru-bin; then
-                  if sudo pacman -Q paru-bin &>/dev/null; then
+                  if pkg_exact paru-bin; then
                     die "Could not remove paru-bin."
                   fi
                   warn "Removal errored, but paru-bin is gone; continuing."
