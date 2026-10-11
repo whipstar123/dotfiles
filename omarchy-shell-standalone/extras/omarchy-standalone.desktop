@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Omarchy Standalone
+Comment=Omarchy shell on Hyprland (start-hyprland)
+Exec=start-hyprland
+TryExec=start-hyprland
+Type=Application
+DesktopNames=Hyprland

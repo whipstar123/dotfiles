@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# omarchy:summary=Install Zed Editor (standalone: official-repo package only)
+
+set -euo pipefail
+
+echo "Installing Zed Editor..."
+if (( EUID == 0 )); then
+  pacman -S --noconfirm --needed zed
+else
+  sudo pacman -S --noconfirm --needed zed
+fi
+
+setsid gtk-launch dev.zed.Zed >/dev/null 2>&1 &

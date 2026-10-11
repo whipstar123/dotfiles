@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# omarchy:summary=Update the system (standalone: paru -Syu via omarchy-update-system)
+# Entry point kept because the omarchy.system-update bar widget runs `omarchy-update`.
+
+set -euo pipefail
+
+exec omarchy-update-system "$@"

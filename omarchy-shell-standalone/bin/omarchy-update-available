@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# omarchy:summary=Check whether package updates are available (exit 0 = yes)
+# Used by the omarchy.system-update bar widget; prints nothing on success.
+
+set -uo pipefail
+
+if command -v checkupdates >/dev/null 2>&1; then
+  checkupdates 2>/dev/null | grep -q . && exit 0
+fi
+
+if command -v paru >/dev/null 2>&1; then
+  paru -Qua 2>/dev/null | grep -q . && exit 0
+fi
+
+exit 1

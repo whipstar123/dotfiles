@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# omarchy:summary=Show a picker TUI for installing AUR packages.
+# omarchy:requires-sudo=true
+
+set -uo pipefail
+
+command -v gum >/dev/null || { echo "gum is required for the package picker" >&2; exit 1; }
+command -v paru >/dev/null || { echo "paru is required for AUR installs" >&2; exit 1; }
+
+pkg_names=$(paru -Slqa | gum filter --no-limit --header "Install (AUR) — type to filter, Tab to multi-select")
+
+if [[ -n ${pkg_names:-} ]]; then
+  source omarchy-sudo-keepalive
+
+  # shellcheck disable=SC2086
+  echo "$pkg_names" | tr '\n' ' ' | xargs paru -S --noconfirm --needed
+  code=$?
+  omarchy-show-done $code
+fi

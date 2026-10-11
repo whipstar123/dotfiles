@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# omarchy:summary=Install the Kitty terminal (standalone: kitty only)
+# omarchy:args=[kitty]
+
+set -euo pipefail
+
+if [[ ${1:-kitty} != "kitty" ]]; then
+  echo "Usage: omarchy-install-terminal [kitty]"
+  echo "Standalone ships Kitty only."
+  exit 1
+fi
+
+echo "Installing Kitty..."
+if (( EUID == 0 )); then
+  pacman -S --noconfirm --needed kitty
+else
+  sudo pacman -S --noconfirm --needed kitty
+fi
+
+setsid gtk-launch kitty >/dev/null 2>&1 &

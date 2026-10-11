@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# omarchy:summary=Update AUR packages only (paru)
+
+set -euo pipefail
+
+command -v paru >/dev/null || { echo "paru is required for AUR updates" >&2; exit 1; }
+
+if ! pacman -Qem >/dev/null 2>&1; then
+  echo "No foreign (AUR) packages installed; nothing to do."
+  exit 0
+fi
+
+echo -e "\e[32mUpdate AUR packages\e[0m"
+paru -Sua --noconfirm

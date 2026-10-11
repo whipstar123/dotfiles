@@ -1,0 +1,4 @@
+# Local backups and transfer archives
+*.bak.*
+*.tar.gz
+*.sha256

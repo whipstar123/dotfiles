@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# omarchy:summary=Update all system packages (pacman + AUR via paru)
+# omarchy:requires-sudo=true
+
+set -euo pipefail
+
+command -v paru >/dev/null || { echo "paru is required for system updates" >&2; exit 1; }
+
+echo -e "\e[32mUpdate system packages (pacman + AUR)\e[0m"
+paru -Syu --noconfirm

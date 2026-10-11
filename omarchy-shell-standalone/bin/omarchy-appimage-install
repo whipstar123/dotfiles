@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# omarchy:summary=Register an AppImage so it appears in the app launcher
+# omarchy:args=<file.AppImage> [name]
+#
+# AppImages never appear in Apps search on their own: the shell reads XDG
+# .desktop entries only. This makes the file executable, writes a .desktop
+# into ~/.local/share/applications, and refreshes the database.
+
+set -euo pipefail
+
+src="${1:-}"
+if [[ -z $src ]]; then
+  if command -v omarchy-file-select >/dev/null; then
+    src=$(omarchy-file-select) || exit 1
+  else
+    echo "Usage: omarchy-appimage-install <file.AppImage> [name]" >&2
+    exit 1
+  fi
+fi
+
+if [[ ! -f $src ]]; then
+  echo "omarchy-appimage-install: file not found: $src" >&2
+  exit 1
+fi
+
+mkdir -p "$HOME/Applications" "$HOME/.local/share/applications"
+chmod +x -- "$src"
+
+base=$(basename -- "$src" .AppImage)
+name="${2:-$base}"
+# Safe desktop id: lowercase, non-alnum -> dash.
+desktop_id=$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]' | sed 's/[^[:alnum:]]\+/-/g; s/^-//; s/-$//')
+[[ -n $desktop_id ]] || desktop_id="$base"
+
+abs_src=$(readlink -f -- "$src")
+
+cat > "$HOME/.local/share/applications/$desktop_id.desktop" <<EOF
+[Desktop Entry]
+Name=$name
+Exec=$abs_src
+Type=Application
+Terminal=false
+Categories=Utility;
+EOF
+
+update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+echo "Registered '$name' as $desktop_id.desktop — it now appears in Apps search."

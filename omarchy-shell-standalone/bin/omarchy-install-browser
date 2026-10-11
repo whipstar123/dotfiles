@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# omarchy:summary=Install the Helium browser (standalone: helium only)
+# omarchy:args=[helium]
+# omarchy:examples=omarchy-install-browser helium
+
+set -euo pipefail
+
+if [[ ${1:-helium} != "helium" ]]; then
+  echo "Usage: omarchy-install-browser [helium]"
+  echo "Standalone ships Helium only (helium-browser-bin from AUR)."
+  exit 1
+fi
+
+command -v paru >/dev/null || { echo "paru is required to install Helium" >&2; exit 1; }
+
+echo "Installing Helium..."
+paru -S --noconfirm --needed helium-browser-bin
+
+echo ""
+echo "Helium installed. Make it the default via Setup > Defaults > Browser."

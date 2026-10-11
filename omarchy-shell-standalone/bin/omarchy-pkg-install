@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# omarchy:summary=Show a picker TUI for installing official-repo packages.
+# omarchy:requires-sudo=true
+
+set -uo pipefail
+
+command -v gum >/dev/null || { echo "gum is required for the package picker" >&2; exit 1; }
+
+pkg_names=$(pacman -Slq | gum filter --no-limit --header "Install (official repos) — type to filter, Tab to multi-select")
+
+if [[ -n ${pkg_names:-} ]]; then
+  source omarchy-sudo-keepalive
+
+  # shellcheck disable=SC2086
+  echo "$pkg_names" | tr '\n' ' ' | xargs sudo pacman -S --noconfirm --needed
+  omarchy-show-done $?
+fi

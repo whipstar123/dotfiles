@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# omarchy:summary=Check for available updates without installing (pacman + AUR)
+
+set -uo pipefail
+
+echo "== Official repos =="
+if command -v checkupdates >/dev/null; then
+  checkupdates || true
+else
+  echo "(checkupdates not installed; run update.check after installing pacman-contrib)"
+fi
+
+echo ""
+echo "== AUR =="
+if command -v paru >/dev/null; then
+  paru -Qua || true
+else
+  echo "(paru not installed)"
+fi

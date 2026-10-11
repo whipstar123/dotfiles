@@ -1,0 +1,97 @@
+{
+  // Omarchy Standalone slim menu (replaces upstream omarchy-menu.jsonc).
+  // Roots: apps, trigger, style, setup, update, install, remove, system, about.
+  // No learn root (keybindings live under setup.keybindings).
+  // No AI / VM / gaming / service / dev rows. No chromium-era rows.
+
+  // Root Menu
+  "apps": {"icon":"󰀻","label":"Apps","aliases":["app","applications"],"provider":"apps"},
+  "trigger": {"icon":"󱓞","label":"Trigger"},
+  "style": {"icon":"","label":"Style"},
+  "setup": {"icon":"","label":"Setup","aliases":["settings"]},
+  "install": {"icon":"󰉉","label":"Install"},
+  "remove": {"icon":"󰭌","label":"Remove","aliases":["uninstall"]},
+  "update": {"icon":"","label":"Update","aliases":["upgrade"]},
+  "about": {"icon":"","label":"About","action":"omarchy-launch-about"},
+  "system": {"icon":"","label":"System","aliases":["power-menu"]},
+
+  // System
+  "system.screensaver": {"icon":"󱄄","label":"Screensaver","action":"omarchy-launch-screensaver force"},
+  "system.lock": {"icon":"","label":"Lock","action":"omarchy-system-lock"},
+  "system.suspend": {"icon":"󰒲","label":"Suspend","when":"! omarchy-toggle-enabled suspend-off","action":"systemctl suspend"},
+  "system.logout": {"icon":"󰍃","label":"Logout","action":"omarchy-system-logout"},
+  "system.reboot": {"icon":"󰜉","label":"Reboot","action":"omarchy-system-reboot"},
+  "system.shutdown": {"icon":"󰐥","label":"Shutdown","action":"omarchy-system-shutdown"},
+
+  // Trigger: appearance
+  "trigger.appearance": {"icon":"󰏘","label":"Appearance"},
+  "trigger.appearance.top-bar.hide": {"icon":"󰈉","label":"Hide Bar","when":"! omarchy-toggle-enabled bar-off","action":"omarchy-toggle-bar"},
+  "trigger.appearance.top-bar.show": {"icon":"󰈈","label":"Show Bar","when":"omarchy-toggle-enabled bar-off","action":"omarchy-toggle-bar"},
+  "trigger.appearance.top-bar.position.top": {"icon":"󰁝","label":"Top Bar","action":"omarchy-bar position top"},
+  "trigger.appearance.top-bar.position.bottom": {"icon":"󰁅","label":"Bottom Bar","action":"omarchy-bar position bottom"},
+  "trigger.appearance.top-bar.position.left": {"icon":"󰁍","label":"Left Bar","action":"omarchy-bar position left"},
+  "trigger.appearance.top-bar.position.right": {"icon":"󰁔","label":"Right Bar","action":"omarchy-bar position right"},
+  "trigger.appearance.window-gaps": {"icon":"","label":"Window Gaps","action":"omarchy-hyprland-window-gaps-toggle"},
+
+  // Trigger: toggles + tools
+  "trigger.toggle": {"icon":"󰔎","label":"Toggle","aliases":["toggle"]},
+  "trigger.toggle.idle-lock": {"icon":"󰅶","label":"Stay Awake","action":"omarchy-toggle-idle"},
+  "trigger.toggle.notifications": {"icon":"󰂛","label":"Notifications","action":"omarchy-toggle-notification-silencing"},
+  "trigger.toggle.nightlight": {"icon":"󰔎","label":"Nightlight","action":"omarchy-toggle-nightlight"},
+  "trigger.emoji": {"icon":"","label":"Emoji","aliases":["emoji","emojis"],"action":"omarchy-menu-emoji"},
+  "trigger.clipboard-history": {"icon":"󰅇","label":"Clipboard History","action":"omarchy-shell shell summon omarchy.clipboard"},
+  "trigger.capture": {"icon":"","label":"Capture","aliases":["capture","screenshot"]},
+  "trigger.capture.screenshot": {"icon":"","label":"Screenshot","action":"omarchy-capture-screenshot"},
+  "trigger.capture.screenrecord.no-audio": {"icon":"","label":"Screenrecord (no audio)","action":"omarchy-capture-screenrecording"},
+  "trigger.capture.screenrecord.desktop-audio": {"icon":"","label":"Screenrecord (desktop audio)","action":"omarchy-capture-screenrecording --with-desktop-audio"},
+  "trigger.share": {"icon":"","label":"Share","aliases":["share"]},
+  "trigger.reminder.set": {"icon":"󰘬","label":"Set Reminder","aliases":["reminder-set","remind"],"action":"omarchy-reminder -i"},
+  "trigger.share.clipboard": {"icon":"","label":"Clipboard","action":"omarchy-menu-share clipboard"},
+  "trigger.share.file": {"icon":"","label":"File","action":"omarchy-menu-share file"},
+  "trigger.share.folder": {"icon":"","label":"Folder","action":"omarchy-menu-share folder"},
+  "trigger.hardware": {"icon":"","label":"Hardware","aliases":["hardware","hw"]},
+  "trigger.hardware.laptop-display": {"icon":"󰛧","label":"Laptop Display","when":"omarchy-hw-laptop","action":"omarchy-hyprland-monitor-internal toggle"},
+  "trigger.hardware.mirror-display": {"icon":"󰍹","label":"Mirror Display","when":"omarchy-hw-laptop","action":"omarchy-hyprland-monitor-internal-mirror toggle"},
+
+  // Style (Catppuccin via theme picker; no plymouth/sddm rows)
+  "style.theme": {"icon":"󰸌","label":"Theme","aliases":["theme","themes"],"action":"omarchy-shell shell summon omarchy.image-picker '{\"source\":\"themes\"}'"},
+  "style.background": {"icon":"","label":"Background","aliases":["background","wallpaper"],"action":"background=$(omarchy-theme-bg-switcher); [[ -n $background ]] && omarchy-theme-bg-set \"$background\""},
+  "style.font": {"icon":"","label":"Font","provider":"fonts"},
+  "style.hyprland": {"icon":"","label":"Hyprland","action":"omarchy-launch-config-editor \"$HOME/.config/hypr/looknfeel.lua\""},
+
+  // Setup
+  "setup.monitors": {"icon":"󰍹","label":"Monitors","action":"omarchy-launch-config-editor \"$HOME/.config/hypr/monitors.lua\""},
+  "setup.keybindings": {"icon":"","label":"Keybindings","when":"[[ -f ~/.config/hypr/bindings.lua ]]","action":"omarchy-launch-config-editor \"$HOME/.config/hypr/bindings.lua\""},
+  "setup.input": {"icon":"","label":"Input","when":"[[ -f ~/.config/hypr/input.lua ]]","action":"omarchy-launch-config-editor \"$HOME/.config/hypr/input.lua\""},
+  "setup.typing": {"icon":"","label":"Typing"},
+  "setup.typing.keyboard": {"icon":"","label":"Keyboard Layouts","action":"omarchy-setup-keyboard"},
+  "setup.network": {"icon":"󰛳","label":"Network","aliases":["network"]},
+  "setup.network.qr": {"icon":"󰐲","label":"QR Code","aliases":["wifi-qr"],"when":"[[ $(omarchy-network-status) == wifi* ]]","action":"omarchy-shell shell summon omarchy.wifiqr"},
+  "setup.default": {"icon":"","label":"Defaults","aliases":["default","defaults"]},
+  "setup.default.terminal.kitty": {"icon":"","label":"Kitty","checked":"[[ \"$(omarchy-default-terminal)\" == \"kitty\" ]]","action":"omarchy-default-terminal kitty"},
+  "setup.default.editor.zed": {"icon":"","label":"Zed","checked":"[[ \"$(omarchy-default-editor)\" == \"zeditor\" ]]","action":"omarchy-default-editor zed"},
+  "setup.default.browser.helium": {"icon":"","label":"Helium","checked":"[[ \"$(omarchy-default-browser)\" == \"helium\" ]]","action":"omarchy-default-browser helium"},
+  "setup.plugin": {"icon":"󰐱","label":"Plugins","aliases":["plugin","plugins"]},
+  "setup.plugin.enable": {"icon":"󰄬","label":"Enable Plugin","action":"omarchy-menu-plugin enable"},
+  "setup.plugin.disable": {"icon":"󰅖","label":"Disable Plugin","action":"omarchy-menu-plugin disable"},
+  "setup.plugin.add": {"icon":"󰖟","label":"Add Plugin","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-plugin-add'"},
+  "setup.plugin.clone": {"icon":"󰆏","label":"Clone Plugin","action":"omarchy-menu-plugin clone"},
+  "setup.plugin.remove": {"icon":"󰭌","label":"Remove Plugin","when":"compgen -G \"$HOME/.config/omarchy/plugins/*/manifest.json\"","action":"omarchy-menu-plugin remove"},
+  "setup.appimage": {"icon":"󰏓","label":"Register AppImage","action":"omarchy-launch-floating-terminal-with-presentation omarchy-appimage-install"},
+  "setup.config": {"icon":"","label":"Config"},
+  "setup.config.hyprland": {"icon":"","label":"Hyprland","action":"omarchy-launch-config-editor \"$HOME/.config/hypr/hyprland.lua\""},
+
+  // Install (slim paru set only)
+  "install.package": {"icon":"󰣇","label":"Package (official repos)","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-pkg-install"},
+  "install.aur": {"icon":"󰣇","label":"AUR Package","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-pkg-aur-install"},
+  "install.browser.helium": {"icon":"","label":"Helium","disabled":"command -v helium >/dev/null","action":"omarchy-launch-floating-terminal-with-presentation 'omarchy-install-browser helium'"},
+
+  // Remove
+  "remove.package": {"icon":"󰣇","label":"Package","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-pkg-remove"},
+
+  // Update (slim paru set only — no snapshots/migrations)
+  "update.system": {"icon":"","label":"System (pacman + AUR)","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-update-system"},
+  "update.pacman-only": {"icon":"󰣇","label":"Official repos only","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-update-pacman-only"},
+  "update.aur-only": {"icon":"󰣇","label":"AUR only","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-update-aur-only"},
+  "update.check": {"icon":"󰓅","label":"Check for updates","action":"xdg-terminal-exec --app-id=org.omarchy.terminal omarchy-update-check"}
+}

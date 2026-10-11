@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# omarchy:summary=Update official-repo packages only (pacman)
+# omarchy:requires-sudo=true
+
+set -euo pipefail
+
+echo -e "\e[32mUpdate official-repo packages\e[0m"
+sudo pacman -Syu --noconfirm
