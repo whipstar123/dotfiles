@@ -19,10 +19,10 @@ tar -xzf omarchy-standalone.tar.gz && cd standalone-src
 sudo ./install.sh
 ```
 
-Order inside: preflight → missing-only pacman set (~1GB if starting bare; stock packages like CachyOS's mesa-git are kept, never replaced) → paru bootstrap
+Order inside: preflight → pacman set (~1GB, takes a while) → paru bootstrap
 (skipped if paru exists) → Helium → copy to `/usr/share/omarchy-standalone`
 → user configs (existing files → `*.bak.<timestamp>`) → Ly session →
-Catppuccin apply → `systemctl enable ly`. Then `reboot`, pick
+Catppuccin apply → Ly on tty2 (getty there disabled). Then `reboot`, pick
 `Omarchy Standalone` in Ly, log in.
 
 ## 3. First checks (in the session, Fish or Kitty)

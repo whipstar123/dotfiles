@@ -290,7 +290,11 @@ sudo -u "$USER_NAME" env OMARCHY_PATH="$TARGET" PATH="$TARGET/bin:$PATH" \
 
 # --- 7. Enable Ly ---------------------------------------------------------------
 log "Enabling Ly..."
-sudo systemctl enable ly || die "Could not enable ly."
+# Current Ly uses a template unit (ly@tty2), not ly.service; getty must
+# vacate that TTY or both fight over it.
+sudo systemctl enable ly@tty2.service || die "Could not enable ly."
+sudo systemctl disable getty@tty2.service || warn "Could not disable getty@tty2."
+
 
 log "Done. Reboot, pick 'Omarchy Standalone' in Ly, and log in."
 log "First checks: echo \$OMARCHY_PATH, omarchy-default-terminal (= kitty),"

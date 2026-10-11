@@ -425,7 +425,7 @@ if [[ $THEME_HEADLESS != "1" && $OMARCHY_THEME_SKIP_BACKGROUND != "1" ]]; then
   # switch directly to the durable path in QML, so neither side needs a copy.
   if choose_staged_theme_background; then
     if [[ $PREVIOUS_THEME_NAME != "$THEME_NAME" && ! -f $HOME/.local/state/omarchy/toggles/background-intros-off ]] &&
-      [[ $(hyprctl -j getoption animations:enabled 2>/dev/null | jq -r '.bool') == "true" ]]; then
+      [[ $(hyprctl -j getoption animations:enabled 2>/dev/null | jq -r '.bool' 2>/dev/null) == "true" ]]; then
       THEME_BACKGROUND_INTRO=$(omarchy-theme-bg-boot-intro --resolve-only "$STAGED_THEME_BACKGROUND")
     fi
     if [[ -n $THEME_BACKGROUND_INTRO ]]; then

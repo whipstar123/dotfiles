@@ -42,10 +42,8 @@ or partition changes — btrfs + limine are never touched.
 
 ## 3. System tree (`/usr/share/omarchy-standalone`, root-owned, `a+rX`)
 
-`shell/` (Quickshell desktop minus `agents`/`dev-gallery` plugins,
-`remote-session` service, `elsewhen` bar widget, and `speedtest`/
-`disk-speedtest` panels; network-panel speed test neutered via
-`canRunSpeedTest: false`), `bin/` (202 helpers — reachability-audited, no `omarchy` router:
+`shell/` (Quickshell desktop minus `agents`/`dev-gallery` plugins and
+`dropbox`/`tailscale` panels), `bin/` (204 helpers — reachability-audited:
 every binary is called from the slim menu, shell QML, Hyprland bindings,
 installer, or another kept helper; constructed names like `omarchy-launch-*`
 and `omarchy-toggle-*` counted),
@@ -54,7 +52,7 @@ and `omarchy-toggle-*` counted),
 
 ## 4. System service
 
-- `systemctl enable ly` (only service change).
+- `systemctl enable ly@tty2.service` + `systemctl disable getty@tty2.service` (only service changes).
 
 ## 5. Per-user writes (existing files moved to `*.bak.<timestamp>` first)
 
