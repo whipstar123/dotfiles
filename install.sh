@@ -230,6 +230,12 @@ log "Installing standalone tree -> $TARGET ..."
 sudo mkdir -p -- "$TARGET"
 sudo cp -a -- "$SRC/shell" "$SRC/bin" "$SRC/config" "$SRC/themes" "$SRC/default" "$SRC/extras" "$TARGET/"
 sudo chmod -R a+rX -- "$TARGET"
+# Repos, tarballs, and FAT sticks can all lose the exec bit; the tree only
+# works if its commands execute, so enforce it (every file under bin/ is a
+# command; the two QML-executed helpers are named explicitly).
+sudo chmod 755 -- "$TARGET"/bin/* \
+  "$TARGET/shell/plugins/clipboard/capture.sh" \
+  "$TARGET/shell/plugins/image-picker/list.sh"
 [[ -f $TARGET/shell/shell.qml ]] || die "Copy failed: $TARGET/shell/shell.qml missing."
 
 # --- 5. User configs (backed up) ----------------------------------------------
