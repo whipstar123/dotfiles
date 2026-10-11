@@ -24,7 +24,7 @@ and rollback. See [docs/PLAN.md](docs/PLAN.md) for the full build plan.
 
 | Path | Installed to | Purpose |
 |---|---|---|
-| `bin/` | `/usr/share/omarchy-standalone/bin` (`OMARCHY_PATH`) | 201 reachability-audited helpers, invoked directly (no `omarchy` router) |
+| `bin/` | `/usr/share/omarchy-standalone/bin` (`OMARCHY_PATH`) | 202 reachability-audited helpers, invoked directly (no `omarchy` router) |
 | `shell/` | `$OMARCHY_PATH/shell` | Quickshell desktop (bar, menu, notifications, OSD, lock, polkit) |
 | `themes/catppuccin/` | `$OMARCHY_PATH/themes/` | Bundled theme (`colors.toml` + backgrounds) |
 | `default/` | `$OMARCHY_PATH/default` | Slim menu base, Hyprland defaults, Kitty/Hyprland/shell templates |

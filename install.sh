@@ -48,20 +48,41 @@ sudo -v || die "sudo authentication failed."
 [[ -f $SRC/bin/omarchy-theme-set && -f $SRC/themes/catppuccin/colors.toml ]] \
   || die "Installer must run from the standalone-src tree (theme engine missing)."
 
-# --- 1. Official-repo packages ----------------------------------------------
-log "Installing official-repo packages..."
-sudo pacman -S --needed --noconfirm \
-  base-devel git fish ly hyprland \
-  xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-terminal-exec \
-  qt6-base qt6-declarative qt6-wayland qt6-svg qt6-multimedia quickshell \
-  kitty zed jq socat wl-clipboard grim slurp hyprsunset hyprpicker polkit \
-  pipewire wireplumber pipewire-pulse pipewire-alsa \
-  networkmanager bluez pamixer brightnessctl power-profiles-daemon udiskie \
-  nautilus sushi imv mpv evince btop fastfetch gum \
-  gpu-screen-recorder tesseract tesseract-data-eng \
-  ttf-cascadia-mono-nerd noto-fonts noto-fonts-emoji \
-  ttf-jetbrains-mono-nerd woff2-font-awesome \
-  || die "pacman package install failed."
+# --- 1. Official-repo packages (only what the system doesn't already pack) ----
+# Stock images (e.g. CachyOS nodesktop) already ship much of this list. Only
+# missing packages are installed, so their setup (like mesa-git) is kept
+# untouched and no provider/conflict prompts fire for satisfied deps.
+# base-devel is a group, so it always goes through (-Q cannot test groups);
+# --needed keeps it a no-op when complete.
+want=(
+  git fish ly hyprland
+  xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-terminal-exec
+  qt6-base qt6-declarative qt6-wayland qt6-svg qt6-multimedia quickshell
+  kitty zed jq socat wl-clipboard grim slurp hyprsunset hyprpicker polkit
+  pipewire wireplumber pipewire-pulse pipewire-alsa
+  networkmanager bluez pamixer brightnessctl power-profiles-daemon udiskie
+  nautilus sushi imv mpv evince btop fastfetch gum
+  gpu-screen-recorder tesseract tesseract-data-eng
+  ttf-cascadia-mono-nerd noto-fonts noto-fonts-emoji
+  ttf-jetbrains-mono-nerd woff2-font-awesome
+)
+missing=()
+for p in "${want[@]}"; do
+  pacman -Q "$p" &>/dev/null || missing+=("$p")
+done
+if (( ${#missing[@]} == 0 )); then
+  log "Official-repo packages already complete; nothing to install."
+else
+  log "Installing missing official-repo packages: ${missing[*]}"
+  if pacman -Q mesa-git &>/dev/null; then
+    warn "mesa-git detected (stock CachyOS graphics stack) - keeping it."
+    warn "If pacman asks you to pick a provider, choose the -git one already installed."
+  fi
+  # Intentionally interactive (no --noconfirm): provider/conflict questions
+  # belong to the operator on this TTY.
+  sudo pacman -S --needed base-devel "${missing[@]}" \
+    || die "pacman package install failed."
+fi
 
 # --- 2. paru bootstrap + Helium ----------------------------------------------
 if ! command -v paru >/dev/null; then
@@ -75,9 +96,18 @@ if ! command -v paru >/dev/null; then
   trap - EXIT
   rm -rf "$tmp"
 fi
-log "Installing AUR packages (Helium, Omasnap, Cliamp)..."
-paru -S --needed --noconfirm helium-browser-bin omasnap-bin cliamp \
-  || die "AUR package install failed."
+aur_want=(helium-browser-bin omasnap-bin cliamp)
+aur_missing=()
+for p in "${aur_want[@]}"; do
+  pacman -Q "$p" &>/dev/null || aur_missing+=("$p")
+done
+if (( ${#aur_missing[@]} == 0 )); then
+  log "AUR packages already complete; nothing to install."
+else
+  log "Installing missing AUR packages: ${aur_missing[*]}"
+  paru -S --needed --noconfirm "${aur_missing[@]}" \
+    || die "AUR package install failed."
+fi
 
 # --- 3. NVIDIA note (generic hardware: inform, don't auto-install) ------------
 if lspci 2>/dev/null | grep -qi nvidia && ! command -v nvidia-smi >/dev/null 2>&1; then

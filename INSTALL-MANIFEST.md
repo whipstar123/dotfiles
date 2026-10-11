@@ -45,7 +45,7 @@ or partition changes — btrfs + limine are never touched.
 `shell/` (Quickshell desktop minus `agents`/`dev-gallery` plugins,
 `remote-session` service, `elsewhen` bar widget, and `speedtest`/
 `disk-speedtest` panels; network-panel speed test neutered via
-`canRunSpeedTest: false`), `bin/` (201 helpers — reachability-audited, no `omarchy` router:
+`canRunSpeedTest: false`), `bin/` (202 helpers — reachability-audited, no `omarchy` router:
 every binary is called from the slim menu, shell QML, Hyprland bindings,
 installer, or another kept helper; constructed names like `omarchy-launch-*`
 and `omarchy-toggle-*` counted),
