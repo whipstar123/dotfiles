@@ -113,7 +113,12 @@ if ! paru_works; then
     ans=""
     if read -rp "Run a full system update now [sudo pacman -Syu]? [Y/n] " ans </dev/tty || [[ -n $ans ]]; then
       if [[ ${ans:-Y} =~ ^[Yy]$ ]]; then
-        sudo pacman -Syu || die "System update failed."
+        if ! sudo pacman -Syu; then
+          # CachyOS CDN mirrors 404 when the local databases reference files
+          # the mirror already dropped; a forced refresh usually fixes it.
+          warn "Update failed; forcing a database refresh and retrying once..."
+          sudo pacman -Syyu || die "System update failed (mirror 404s). Refresh CachyOS mirrors, wait for sync, then re-run."
+        fi
         paru_works || install_paru_bin || die "paru reinstall failed after update."
         paru_works || die "paru still broken after update; finish updating and re-run."
       else
