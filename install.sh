@@ -120,7 +120,32 @@ if ! paru_works; then
           sudo pacman -Syyu || die "System update failed (mirror 404s). Refresh CachyOS mirrors, wait for sync, then re-run."
         fi
         paru_works || install_paru_bin || die "paru reinstall failed after update."
-        paru_works || die "paru still broken after update; finish updating and re-run."
+        if ! paru_works; then
+          # paru-bin is prebuilt against Arch stable; a system whose pacman
+          # libraries differ (older media, testing repos, a shadowed binary)
+          # needs a paru compiled against its own libraries instead.
+          warn "Fresh paru-bin still cannot start here. Diagnostics:"
+          warn "  paru binary: $(command -v paru) (also: $(type -a paru 2>/dev/null | tr '\n' ' '))"
+          warn "  linkage: $(ldd "$(command -v paru)" 2>/dev/null | grep -i alpm || echo unknown)"
+          warn "  system ships: $(ls /usr/lib/libalpm.so* 2>/dev/null || echo none found)"
+          ans2=""
+          if read -rp "Build paru from source against your libraries (needs rust)? [Y/n] " ans2 </dev/tty || [[ -n $ans2 ]]; then
+            if [[ ${ans2:-Y} =~ ^[Yy]$ ]]; then
+              sudo pacman -S --needed --noconfirm rust || die "rust install failed."
+              tmp2=$(mktemp -d)
+              trap 'rm -rf "$tmp2"' EXIT
+              git clone https://aur.archlinux.org/paru.git "$tmp2/paru" || die "paru clone failed."
+              (cd "$tmp2/paru" && makepkg -si --noconfirm) || die "paru source build failed."
+              trap - EXIT
+              rm -rf "$tmp2"
+              paru_works || die "Source-built paru still broken; paste the Diagnostics lines above for help."
+            else
+              die "Update the system (sudo pacman -Syu), then re-run install.sh."
+            fi
+          else
+            die "Update the system (sudo pacman -Syu), then re-run install.sh."
+          fi
+        fi
       else
         die "Update the system (sudo pacman -Syu), then re-run install.sh."
       fi
