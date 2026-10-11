@@ -84,15 +84,24 @@ else
     || die "pacman package install failed."
 fi
 
-# --- 2. paru bootstrap + Helium ----------------------------------------------
-if ! command -v paru >/dev/null; then
-  log "Bootstrapping paru from AUR..."
+# --- 2. paru (bootstrap if missing, rebuild if broken) -------------------------
+# A paru linked against a stale libalpm (e.g. after a pacman upgrade) fails
+# with "error while loading shared libraries". Rebuild it from AUR in that
+# case instead of trusting the broken binary.
+if command -v paru >/dev/null && paru --version &>/dev/null; then
+  log "paru already present and working."
+else
+  if command -v paru >/dev/null; then
+    warn "Installed paru is broken (stale library link); rebuilding from AUR..."
+  else
+    log "Bootstrapping paru from AUR..."
+  fi
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
   git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" \
     || die "paru-bin clone failed (network or AUR unreachable)."
   (cd "$tmp/paru-bin" && makepkg -si --noconfirm) \
-    || die "paru build/install failed."
+    || die "paru build/install failed (try a full system update first)."
   trap - EXIT
   rm -rf "$tmp"
 fi
