@@ -95,11 +95,14 @@ install_paru_bin() {
   local tmp
   # A source-built paru conflicts with paru-bin by package name; clear it.
   if pacman -Q paru &>/dev/null; then
+    log "Removing conflicting paru package..."
     sudo pacman -R --noconfirm paru || return 1
   fi
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
+  log "Cloning paru-bin..."
   git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" || return 1
+  log "Building paru-bin..."
   (cd "$tmp/paru-bin" && makepkg -si --noconfirm) || return 1
   trap - EXIT
   rm -rf "$tmp"
@@ -121,7 +124,25 @@ if ! paru_works; then
           # CachyOS CDN mirrors 404 when the local databases reference files
           # the mirror already dropped; a forced refresh usually fixes it.
           warn "Update failed; forcing a database refresh and retrying once..."
-          sudo pacman -Syyu || die "System update failed (mirror 404s). Refresh CachyOS mirrors, wait for sync, then re-run."
+          if ! sudo pacman -Syyu; then
+            # The mirror itself is out of sync (db lists files it dropped).
+            # cachyos-rate-mirrors ranks by speed AND sync status.
+            if command -v cachyos-rate-mirrors >/dev/null; then
+              ans_m=""
+              if read -rp "Re-rank CachyOS mirrors and retry once? [Y/n] " ans_m </dev/tty || [[ -n $ans_m ]]; then
+                if [[ ${ans_m:-Y} =~ ^[Yy]$ ]]; then
+                  sudo cachyos-rate-mirrors || warn "Mirror re-rank failed; retrying anyway."
+                  sudo pacman -Syyu || die "System update failed (mirror 404s). Wait for mirror sync, then re-run."
+                else
+                  die "System update failed (mirror 404s). Refresh CachyOS mirrors, wait for sync, then re-run."
+                fi
+              else
+                die "System update failed (mirror 404s). Refresh CachyOS mirrors, wait for sync, then re-run."
+              fi
+            else
+              die "System update failed (mirror 404s). Refresh CachyOS mirrors, wait for sync, then re-run."
+            fi
+          fi
         fi
         paru_works || install_paru_bin || die "paru reinstall failed after update."
         if ! paru_works; then
@@ -138,6 +159,7 @@ if ! paru_works; then
               sudo pacman -S --needed --noconfirm rust || die "rust install failed."
               # The broken binary is paru-bin; the source build conflicts by name.
               if pacman -Q paru-bin &>/dev/null; then
+                log "Removing paru-bin (conflicts with source build)..."
                 sudo pacman -R --noconfirm paru-bin || die "Could not remove paru-bin."
               fi
               tmp2=$(mktemp -d)
